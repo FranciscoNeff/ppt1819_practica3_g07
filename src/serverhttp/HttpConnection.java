@@ -72,7 +72,7 @@ public class HttpConnection implements Runnable{
                     //400 Bad Request (formato versión)
                 }
             }else {
-                //400 Bad Request (número de elementos en la RL)
+                //400 Bad Request (número de elementos en la URL)
             }
            
         } catch (IOException ex) {
@@ -92,21 +92,31 @@ public class HttpConnection implements Runnable{
 		
 		
     }
-    private String readEntity(String path) throws HttpExcepcion404{
-        //Leer del fichero
-        
-        return "<html><body><h1>405</h1></body></html>";
-        
-    }
+  
     
     public class HttpExcepcion400 extends IOException{
-    	
+    	 private String readEntity(String path) throws HttpExcepcion400{
+ 	        //Leer del fichero
+ 	        return "<html><body><h1>ERROR CODE: 400</h1><p> Your client has issued a malformed or ilegal request</p></body></html>";
+ 	        
+ 	    }
     }
 public class HttpExcepcion404 extends IOException{
+	private String readEntity(String path) throws HttpExcepcion404{
+        //Leer del fichero
+        return "<html><body><h1> ERROR CODE: 404</h1><p> The request URL was not found</p></body></html>";   
+    }
     }
 public class HttpExcepcion405 extends IOException{
-	
+	private String readEntity(String path) throws HttpExcepcion405{
+        //Leer del fichero
+        return "<html><body><h1>ERROR CODE: 405 </h1> <p>HTTP verb used to access this page is not allowed</p></body></html>";  
+    }
 }
 public class HttpExcepcion505 extends IOException{
+	private String readEntity(String path) throws HttpExcepcion505{
+        //Leer del fichero
+        return "<html><body><h1>ERROR CODE: 505 </h1> <p>Internal server error</p></body></html>";    
+    }
 }
 }
