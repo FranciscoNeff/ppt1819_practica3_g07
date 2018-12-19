@@ -45,7 +45,6 @@ public class HttpConnection implements Runnable{
            String path=  analizeRequest(reqline);
            String response="HTTP/1.1 200 OK \r\n";
            String entity="<html><body><h1>HOLA</h1></body></html>";//para probar
-           
            headers=headers+head.HeaderHttpDate()+head.HeaderHttpServer()+head.HeaderHttpLength(entity.length());
            out = new DataOutputStream(socket.getOutputStream());
            response= response +headers;
@@ -60,7 +59,6 @@ public class HttpConnection implements Runnable{
             	
             }catch (HttpExcepcion505 e505) {
             	
-            
             }
         }catch (IOException e) {
     				e.printStackTrace();
