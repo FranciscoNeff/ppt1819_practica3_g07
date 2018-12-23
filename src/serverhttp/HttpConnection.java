@@ -15,41 +15,44 @@ public class HttpConnection implements Runnable{
     Socket socket= null;
     public HttpHeaders head = new HttpHeaders();
     String headers="";
+    String url="";
     //headers=headers+head.HeaderHttpType(path);
     public HttpConnection (Socket s){
         socket=s;
     }
-    public String directory= "C:\\Users\\Corgi\\git\\ppt1819_practica3_g07\\www\\";
+    public String directory= "C:\\Users\\Corgi\\git\\ppt1819_practica3_g07\\www";
     //revisar rutas de directorios por internet
     String uri = directory.replace("/","\\");
    
     @Override
     public void run() {
        DataOutputStream out = null;
-        
+        byte[] resource=null;
            System.out.println("Server connection: "+socket.getInetAddress().toString());
             try {
 				out = new DataOutputStream(socket.getOutputStream());
 				out.flush();
             //dos.write("200 OK\r\n".getBytes());
-            
-            
             //////////////////////
             BufferedReader buffer = new BufferedReader(new InputStreamReader(socket.getInputStream()));
             String reqline = buffer.readLine();
+            while ((reqline=buffer.readLine())!=null) {
+            	
+            }
            // System.out.println("SERVER ["+socket.getInetAddress().toString()+"] received>"+reqline);
           //String response="HTTP/1.1 200 OK\\r\\nContent-type:text/html\\r\\nConten-length:39\\r\\n\\r\\n";
            
             
             try {
-           String path=  analizeRequest(reqline);
+           String url=  AnalizeRequest(reqline);
            String response="HTTP/1.1 200 OK \r\n";
            String entity="<html><body><h1>HOLA</h1></body></html>";//para probar
+           resource = ReadResource(url);
            headers=headers+head.HeaderHttpDate()+head.HeaderHttpServer()+head.HeaderHttpLength(entity.length());
            out = new DataOutputStream(socket.getOutputStream());
-           response= response +headers;
+           response= response +headers+entity;
            out.write(response.getBytes());
-           out.write(entity.getBytes());
+          // out.write(entity.getBytes());
            //String entity="<html><body><h1>HOLA</h1></body></html>";//para probar
             }catch (HttpExcepcion400 e400) {
             	
@@ -76,8 +79,10 @@ public class HttpConnection implements Runnable{
        	}
   }
            
-    protected String analizeRequest(String reqline) throws  HttpExcepcion400, HttpExcepcion404, HttpExcepcion405, HttpExcepcion505 {
-    	 String [] items=reqline.split(" ");
+    protected String AnalizeRequest(String reqline) throws  HttpExcepcion400, HttpExcepcion404, HttpExcepcion405, HttpExcepcion505 {
+    	String path=""; 
+    	if (reqline!=null) {
+    	String[] items=reqline.split(" ");
          if(items.length==3){ // items[0]Método (GET | POST), items[1]Recurso(lo que se pide) y items[2]Versión HTTP/X.X
         	  if(items[2].equals("HTTP/0.9")||items[2].equals("HTTP/1.0")||items[2].equals("HTTP/1.1")){ //Versiones posibles correctas //la cabecera http/2.0 no esta
                   
@@ -89,6 +94,7 @@ public class HttpConnection implements Runnable{
                          
                           
                           if(!items[0].startsWith("GET")){
+                      		path=uri+"/index.html";
                       		
                           }
                           
@@ -109,7 +115,10 @@ public class HttpConnection implements Runnable{
              //505 HTTP Version Not Supported
         	 throw new HttpExcepcion505();
          }
-         return "/";
+    	}else {
+        	 throw new HttpExcepcion400();
+         }
+         return path;
  }
     
  
@@ -143,11 +152,11 @@ public class HttpExcepcion505 extends IOException{
     }
 }
 
-private byte[]readRecurso(String uri)throws FileNotFoundException,IOException{
+private byte[]ReadResource(String url)throws FileNotFoundException,IOException{
 	byte[] bytes=null;//por si acaso el archivo no esta=null
 	try {
-		File resource = new File (uri);
-		BufferedInputStream bis = new BufferedInputStream(new FileInputStream(uri));
+		File resource = new File (url);
+		BufferedInputStream bis = new BufferedInputStream(new FileInputStream(url));
 		bytes = new byte[(int) resource.length()];
 		
 	}catch(FileNotFoundException fix) {throw new HttpExcepcion404();

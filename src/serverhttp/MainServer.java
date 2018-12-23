@@ -17,8 +17,8 @@ static ServerSocket server= null;
         
         try {
             InetAddress serveraddr=InetAddress.getLocalHost(); //consigue la ip del equipo
-            server= new ServerSocket (6000,5,serveraddr); //servidor puerto 8000, 5 conexiones máximas,ip equipo
-            //System.out.println("Server waiting for HTTP connections...");
+            server= new ServerSocket (8000,5,serveraddr); //servidor puerto 8000, 5 conexiones máximas,ip equipo
+            System.out.println("Server waiting for HTTP connections...");
             
             while(true){
             Socket s=server.accept();
