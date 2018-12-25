@@ -24,20 +24,16 @@ public String HeaderHttpServer() {
 }
 public String HeaderHttpType(String mimeVersion) {
 	String type="Content-Type: ";//Content-Type: text/html; charset=UTF-8 \r\n
-	switch (mimeVersion) {
-	case "html":
-		type=type+"text/html"+CRLF;
-		break;
-	case "txt":
-		type=type+"text/plain"+CRLF;
-		break;
-	case "jpg":
+	if (mimeVersion.endsWith(".html")) {
+		type=type+"text/html;charset=UTF-8"+CRLF;
+	}else if(mimeVersion.endsWith(".jpeg")) {
 		type=type+"image/jpeg"+CRLF;
-		break;
-	default: //por si acaso hay algun problema, por lo menos el typo html para mostrar el error
-		type=type+"text/html"+CRLF;
-		break;
-	}
+	}else if(mimeVersion.endsWith(".txt")) {
+		type=type+"text/plain"+CRLF;
+	}else {
+		type=type+"text/html;charset=UTF-8"+CRLF;
+	}//si por lo que sea no encuentra el type se manda el html para las posibles respuestas
+	
 	return type;
 }
 public String HeaderHttpLength(int length) {
