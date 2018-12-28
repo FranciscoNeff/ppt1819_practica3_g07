@@ -49,7 +49,7 @@ public class HttpConnection implements Runnable{
             	String reqline="";
             BufferedReader buffer = new BufferedReader(new InputStreamReader(socket.getInputStream()));
              reqline = buffer.readLine();
-            System.out.println(reqline);
+            System.out.println("Request> "+reqline);
             try {
            url= AnalizeRequest(reqline);
            resource = ReadResource(url);
