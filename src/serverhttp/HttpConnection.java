@@ -8,15 +8,29 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.Socket;
+import java.text.Format;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
+/*
+ * author: Francisco Jose Neff Hernandez
+ * proyecto realizado en eclipse
+ */
 public class HttpConnection implements Runnable{
-    Socket socket= null;
+	private static final String STATUS_200="HTTP/1.1 200 OK\r\n";
+	private static final String STATUS_400="HTTP/1.1 400 Bad Request\r\n";
+	private static final String HTML_400="<html><body><h1>ERROR CODE: 400 Bad Request</h1><p> Your client has issued a malformed or ilegal request</p></body></html>";
+	private static final String STATUS_404="HTTP/1.1 404 Not Found\r\n";
+	private static final String HTML_404="<html><body><h1> ERROR CODE: 404 Not Found</h1><p> The request URL was not found</p></body></html>";
+	private static final String STATUS_405="HTTP/1.1 405 Method Not Allowed\r\n";
+	private static final String HTML_405="<html><body><h1>ERROR CODE: 405 Method Not Allowed</h1> <p>HTTP verb used to access this page is not allowed</p></body></html>";
+	private static final String STATUS_505="HTTP/1.1 505 HTTP Version Not Supported\r\n";
+	private static final String HTML_505="<html><body><h1>ERROR CODE: 505 HTTP Version Not Supported</h1> <p>Internal server error</p></body></html>"; 
+	Socket socket= null;
     public HttpHeaders head = new HttpHeaders();
     String headers="";
     String url="";
-    //headers=headers+head.HeaderHttpType(path);
     public HttpConnection (Socket s){
         socket=s;
     }
@@ -26,157 +40,102 @@ public class HttpConnection implements Runnable{
     @Override
     public void run() {
        DataOutputStream out = null;
-       String peticion="";
-       String respuesta="";
         byte[] resource=null;
-           
             try {
             	System.out.println("Server connection: "+socket.getInetAddress().toString());
-			//	out = new DataOutputStream(socket.getOutputStream());
-			//	out.flush();
-            //dos.write("200 OK\r\n".getBytes());
-            //////////////////////
+            	String reqline="";
             BufferedReader buffer = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-            String reqline = buffer.readLine();
+             reqline = buffer.readLine();
             System.out.println(reqline);
-           /* while ((reqline=buffer.readLine())!=null&& reqline.compareTo("")!=0) {
-            	peticion=peticion+reqline+"/r/n";
-            }*/
-           // System.out.println("SERVER ["+socket.getInetAddress().toString()+"] received>"+reqline);
-          //String response="HTTP/1.1 200 OK\\r\\nContent-type:text/html\\r\\nConten-length:39\\r\\n\\r\\n";
-           
-            
             try {
-           String url=  AnalizeRequest(reqline);
-           String response="HTTP/1.1 200 OK\r\n";
+           url= AnalizeRequest(reqline);
            resource = ReadResource(url);
-           headers=headers+head.HeaderHttpDate()
-           +head.HeaderHttpServer()
-           +head.HeaderHttpConnection()
-           +head.HeaderHttpType(url)
-           +head.HeaderHttpLength(url.length());
-        
-           respuesta= response+headers+uri+url;
+           headers=STATUS_200
+           +head.GetHeaderHTTP(url,resource.length);
+          System.out.println(headers);
           
-         //  out.write(url.getBytes());
-           //String entity="<html><body><h1>HOLA</h1></body></html>";//para probar
             }catch (HttpExcepcion400 e400) {
-            	
+            	resource=HTML_400.getBytes();
+            	headers=STATUS_400
+            	+head.GetHeaderHTTP(url,resource.length);
+            	System.out.println(headers);
             }catch (HttpExcepcion404 e404) {
-            	
+            	resource=HTML_404.getBytes();
+            	headers=STATUS_404
+            	+head.GetHeaderHTTP(url,resource.length);
+            	System.out.println(headers);
             }catch (HttpExcepcion405 e405) {
-            	
+            	resource=HTML_405.getBytes();
+            	headers=STATUS_405
+            	+head.GetHeaderHTTP(url,resource.length);
+            	System.out.println(headers);
             }catch (HttpExcepcion505 e505) {
-            	
+            	resource=HTML_505.getBytes();
+            	headers=STATUS_505
+            	+head.GetHeaderHTTP(url,resource.length);
+            	System.out.println(headers);
             }
         }catch (IOException e) {
         	System.out.println("Error server connection: "+socket.getInetAddress().toString());
     				e.printStackTrace();
-    			
         }finally {
-        	/*dos.write(("ECO "+reqline).getBytes());
-            dos.flush();*/
-        	  try {
+        	  try {//añadir url
         		  out = new DataOutputStream(socket.getOutputStream());
-        		  out.write(respuesta.getBytes());
+        		  out.write(headers.getBytes());
         		  out.write(resource);
         		  out.flush();
 				out.close();
 				socket.close();
 			} catch (IOException e) {
-				// TODO Auto-generated catch block
+				System.out.println("Error server connection: "+socket.getInetAddress().toString());
 				e.printStackTrace();
 			}
        	}
   }
            
-    protected String AnalizeRequest(String reqline) throws  HttpExcepcion400, HttpExcepcion404, HttpExcepcion405, HttpExcepcion505 {
+   
+
+	protected String AnalizeRequest(String reqline) throws  HttpExcepcion400, HttpExcepcion404, HttpExcepcion405, HttpExcepcion505 {
     	String path=""; 
     	if (reqline!=null) {
     	String[] items=reqline.split(" ");
-    	System.out.println(items[2]);
          if(items.length==3){ // items[0]Método (GET | POST), items[1]Recurso(lo que se pide) y items[2]Versión HTTP/X.X
         	  if(items[2].equals("HTTP/0.9")||items[2].equals("HTTP/1.0")||items[2].equals("HTTP/1.1")){ //Versiones posibles correctas //la cabecera http/2.0 no esta
-                  
-                  if(items[2].equals("HTTP/1.1")){
-                      //La versión de HTTP1.1 es la unica que debe aceptar
-                      
+        		  if(items[2].equals("HTTP/1.1")){//La versión de HTTP1.1 es la unica que debe aceptar
                       if(items[0].equals("GET")||items[0].equals("POST")||items[0].equals("HEAD")||items[0].equals("OPTIONS")
                               ||items[0].equals("PUT")||items[0].equals("DELETE")||items[0].equals("TRACE")||items[0].equals("CONNECT")){//posibles metodos de http
-                         
-                          
-                          if(items[0].equals("GET")){
+                         //Posible recursos q tenemos
+                    	  if(items[1].equals("/index.html")){
                       		path="/index.html";
-                      		
-                          }
-                          
-                      
-                  }else{
-                  	//400 Bad Request (formato método)
-                	  throw new HttpExcepcion400();
-                  }
-              }else{
-                  //400 Bad Request (formato versión)
-            	  throw new HttpExcepcion400();
-              }
-          }else {
-              //405 Method Not Allowed
-            	  throw new HttpExcepcion405();        
-          }
-         }else{
-             //505 HTTP Version Not Supported
-        	 throw new HttpExcepcion505();
-         }
-    	}else {
-        	 throw new HttpExcepcion400();
-         }
+                      	}else if(items[1].equals("/img/escudouja.jpg")) {
+                      		path="/img/escudouja.jpg";
+                      	}else {throw new HttpExcepcion404();}//404 Not Found
+                  }else{throw new HttpExcepcion405();}//405 Method Not Allowed
+              }else{ throw new HttpExcepcion400(); }//400 Bad Request (formato versión)
+          }else { throw new HttpExcepcion405();} //405 Method Not Allowed
+         }else{ throw new HttpExcepcion400(); }//400 peticion mal formada
+    	}else { throw new HttpExcepcion400();}//400 Fallo al recibir la peticion
          return path;
  }
-    
- 
-    public class HttpExcepcion400 extends IOException{
-    	 private String readEntity(String path) throws HttpExcepcion400{
-    		 String entity="<html><body><h1>ERROR CODE: 400</h1><p> Your client has issued a malformed or ilegal request</p></body></html>";
- 	        //Leer del fichero
- 	        return entity;
- 	        
- 	    }
-    }
-public class HttpExcepcion404 extends IOException{
-	private String readEntity(String path) throws HttpExcepcion404{
-		String entity="<html><body><h1> ERROR CODE: 404</h1><p> The request URL was not found</p></body></html>";   
-		//Leer del fichero
-        return entity;
-    }
-    }
-public class HttpExcepcion405 extends IOException{
-	private String readEntity(String path) throws HttpExcepcion405{
-       String entity="<html><body><h1>ERROR CODE: 405 </h1> <p>HTTP verb used to access this page is not allowed</p></body></html>";  
-		//Leer del fichero
-        return entity;
-    }
-}
-public class HttpExcepcion505 extends IOException{
-	private String readEntity(String path) throws HttpExcepcion505{
-        String entity="<html><body><h1>ERROR CODE: 505 </h1> <p>Internal server error</p></body></html>";    
-		//Leer del fichero
-        return entity;
-    }
-}
+
+	
+public class HttpExcepcion400 extends IOException{}
+public class HttpExcepcion404 extends IOException{}
+public class HttpExcepcion405 extends IOException{}
+public class HttpExcepcion505 extends IOException{}
 
 protected byte[]ReadResource(String url)throws FileNotFoundException,IOException{
-	byte[] bytes=null;//por si acaso el archivo no esta=null
-	url=uri+url;
-	System.out.println(url);
+	byte[] bytes=null;
+	url=uri+url;//ruta donde se encuentra el archivo
 	try {
 		File resource = new File (url);
 		if(resource.exists()) {
-		System.out.println(resource.length());
-		FileInputStream fis = new FileInputStream(resource);
+		FileInputStream fis = new FileInputStream(url);
 		BufferedInputStream bis = new BufferedInputStream(fis);
 		long tam=resource.length();
-		bytes = new byte[(int) resource.length()];
-		bis.read(bytes,0,bytes.length);}
+		bytes = new byte[(int) (tam)];
+		bis.read(bytes,0,bytes.length);
+		fis.close();}
 	}catch(FileNotFoundException fix) {throw new HttpExcepcion404();
 	}catch(IOException ioex) {throw new HttpExcepcion404();
 	}
