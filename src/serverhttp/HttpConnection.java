@@ -16,6 +16,9 @@ import java.util.logging.Logger;
 /*
  * author: Francisco Jose Neff Hernandez
  * proyecto realizado en eclipse
+ * Solo se tienen los recursos
+ * 		index.html
+ * 		img/escudouja.jpg
  */
 public class HttpConnection implements Runnable{
 	private static final String STATUS_200="HTTP/1.1 200 OK\r\n";

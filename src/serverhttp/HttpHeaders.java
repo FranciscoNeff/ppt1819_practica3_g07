@@ -11,7 +11,7 @@ public class HttpHeaders {
 private static final String DATE="Date: ";//Formato Fri, 15 May 2015 17:06:54 GMT try("EEE, dd MMM yyyy HH:mm:ss Z")
 private static final String SERVER="Server: Corgi \r\n";
 private static final String LENGTH="Content-Length: ";
-private static final String ALLOW="Allow: GET \r\n";//GET, POST,
+private static final String ALLOW="Allow: GET, POST \r\n";//GET, POST permite ambos metodos
 private static final String CONNECTION = "Connection: close \r\n";
 private static final String CRLF = " \r\n";
 
