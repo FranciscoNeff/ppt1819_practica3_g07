@@ -49,40 +49,45 @@ public class HttpConnection implements Runnable{
             	String reqline="";
             BufferedReader buffer = new BufferedReader(new InputStreamReader(socket.getInputStream()));
              reqline = buffer.readLine();
-            System.out.println("Request> "+reqline);
+             String rheaders="";
+             System.out.println("Request > "+reqline);
+             System.out.println("Request headers > \n"+reqline);
+             do {
+            rheaders= buffer.readLine();
+            System.out.println("> "+rheaders);           	 
+             }while(rheaders.length()>0);
             try {
            url= AnalizeRequest(reqline);
            resource = ReadResource(url);
            headers=STATUS_200
            +head.GetHeaderHTTP(url,resource.length);
-          System.out.println(headers);
-          
+          System.out.println("Response > \n" +headers);  
             }catch (HttpExcepcion400 e400) {
             	resource=HTML_400.getBytes();
             	headers=STATUS_400
             	+head.GetHeaderHTTP(url,resource.length);
-            	System.out.println(headers);
+            	System.out.println("Response > \n" +headers);  
             }catch (HttpExcepcion404 e404) {
             	resource=HTML_404.getBytes();
             	headers=STATUS_404
             	+head.GetHeaderHTTP(url,resource.length);
-            	System.out.println(headers);
+            	System.out.println("Response > \n" +headers);  
             }catch (HttpExcepcion405 e405) {
             	resource=HTML_405.getBytes();
             	headers=STATUS_405
             	+head.GetHeaderHTTP(url,resource.length);
-            	System.out.println(headers);
+            	System.out.println("Response > \n" +headers);  
             }catch (HttpExcepcion505 e505) {
             	resource=HTML_505.getBytes();
             	headers=STATUS_505
             	+head.GetHeaderHTTP(url,resource.length);
-            	System.out.println(headers);
+            	System.out.println("Response > \n" +headers);  
             }
         }catch (IOException e) {
         	System.out.println("Error server connection: "+socket.getInetAddress().toString());
-    				e.printStackTrace();
+        	 Logger.getLogger(MainServer.class.getName()).log(Level.SEVERE, null, e);
         }finally {
-        	  try {//añadir url
+        	  try {
         		  out = new DataOutputStream(socket.getOutputStream());
         		  out.write(headers.getBytes());
         		  out.write(resource);
@@ -91,7 +96,7 @@ public class HttpConnection implements Runnable{
 				socket.close();
 			} catch (IOException e) {
 				System.out.println("Error server connection: "+socket.getInetAddress().toString());
-				e.printStackTrace();
+				Logger.getLogger(MainServer.class.getName()).log(Level.SEVERE, null, e);
 			}
        	}
   }
@@ -108,7 +113,7 @@ public class HttpConnection implements Runnable{
                       if(items[0].equals("GET")||items[0].equals("POST")||items[0].equals("HEAD")||items[0].equals("OPTIONS")
                               ||items[0].equals("PUT")||items[0].equals("DELETE")||items[0].equals("TRACE")||items[0].equals("CONNECT")){//posibles metodos de http
                          //Posible recursos q tenemos
-                    	  if(items[1].equals("/index.html")){
+                    	  if(items[1].equals("/index.html")||items[1].equals("/")){//se añade recurso por defecto con "/"
                       		path="/index.html";
                       	}else if(items[1].equals("/img/escudouja.jpg")) {
                       		path="/img/escudouja.jpg";
