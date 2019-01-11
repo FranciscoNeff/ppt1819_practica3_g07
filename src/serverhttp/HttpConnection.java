@@ -114,9 +114,9 @@ public class HttpConnection implements Runnable{
                          //Posible recursos q tenemos
                     	  if(items[1].equals("/index.html")||items[1].equals("/")){//se añade recurso por defecto con "/"
                       		path="/index.html";
-                      	}else if(items[1].equals("/img/escudouja.jpg")) {
-                      		path="/img/escudouja.jpg";
-                      	}else {throw new HttpExcepcion404();}//404 Not Found
+                          	}else if(items[1].equals("/img/escudouja.jpg")) {
+                          		path="/img/escudouja.jpg";
+                          	}  
                   }else{throw new HttpExcepcion405();}//405 Method Not Allowed
               }else{ throw new HttpExcepcion400(); }//400 Bad Request (formato versión)
           }else { throw new HttpExcepcion405();} //405 Method Not Allowed
@@ -131,7 +131,7 @@ public class HttpExcepcion404 extends IOException{}
 public class HttpExcepcion405 extends IOException{}
 public class HttpExcepcion505 extends IOException{}
 
-protected byte[]ReadResource(String url)throws FileNotFoundException,IOException{
+protected byte[]ReadResource(String url)throws FileNotFoundException,IOException,HttpExcepcion404{
 	byte[] bytes=null;
 	url=uri+url;//ruta donde se encuentra el archivo
 	try {
@@ -143,9 +143,9 @@ protected byte[]ReadResource(String url)throws FileNotFoundException,IOException
 		bytes = new byte[(int) (tam)];
 		bis.read(bytes,0,bytes.length);
 		fis.close();}
-	}catch(FileNotFoundException fix) {throw new HttpExcepcion404();
+	}catch(FileNotFoundException fix) {throw new HttpExcepcion404();//Aqui lanzamos el error 404 no encontrando el archivo
 	}catch(IOException ioex) {throw new HttpExcepcion404();
-	}
+	}//antes el error 404 estaba puesto para realizar pruebas rapidas, sin luego verificar su correcto funcionamiento
 		return bytes;
 }
 
