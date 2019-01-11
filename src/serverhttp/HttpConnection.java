@@ -52,10 +52,9 @@ public class HttpConnection implements Runnable{
              String rheaders="";
              System.out.println("Request > "+reqline);
              System.out.println("Request headers > \n"+reqline);
-             do {
-            rheaders= buffer.readLine();
+             while((rheaders=buffer.readLine()).length()>0) {   
             System.out.println("> "+rheaders);           	 
-             }while(rheaders.length()>0);
+             }
             try {
            url= AnalizeRequest(reqline);
            resource = ReadResource(url);
@@ -151,3 +150,4 @@ protected byte[]ReadResource(String url)throws FileNotFoundException,IOException
 }
 
 }
+
